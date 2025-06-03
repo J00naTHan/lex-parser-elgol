@@ -6,13 +6,13 @@ use pest_derive::Parser;
 pub struct ElgolParser;
 
 pub fn parse(input: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let parsed = ElgolParser::parse(Rule::program, input)?;
+    let parsed = ElgolParser::parse(Rule::programa, input)?;
     
     // Processar a árvore de parsing aqui
     for pair in parsed {
         match pair.as_rule() {
-            Rule::function => println!("Função: {:?}", pair.as_str()),
-            Rule::statement => println!("Comando: {:?}", pair.as_str()),
+            Rule::funcao => println!("Função: {:?}", pair.as_str()),
+            Rule::expressao => println!("Comando: {:?}", pair.as_str()),
             _ => {}
         }
     }
