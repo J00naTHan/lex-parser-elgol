@@ -1,5 +1,6 @@
 // importa o código do modulo lexer (arquivo lexer.rs) para o escopo da main
 pub mod lexer;
+pub mod parser;
 
 // importa a struct Logos da crate logos no escopo da main
 use logos::Logos;
@@ -29,6 +30,8 @@ fn main() {
 
     // teste para visualização do arquivo com código-fonte Elgol
     // println!("\n{:?}", haystack);
+
+    parser::execute_parser();
 
     // instancia uma struct de analisador léxico do Logos passando o texto que deve ser analisado
     let mut lexer = lexer::Token::lexer(&haystack);

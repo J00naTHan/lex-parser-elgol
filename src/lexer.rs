@@ -17,7 +17,7 @@ fn token_callback(lex: &mut Lexer<Token>) -> (usize, usize, String) {
     let line = lex.extras.0;
     let column = lex.span().start - lex.extras.1;
     let word = lex.slice();
-    (line, column, word.to_string())
+    (line + 1, column + 1, word.to_string())
 }
 
 
@@ -27,8 +27,8 @@ fn token_callback(lex: &mut Lexer<Token>) -> (usize, usize, String) {
 /// atributo para especificar que o analisador deve pular comentários e espaços em branco
 #[logos(skip r"#.*|[ \r\t\f]+")]
 
-/// atributo para definir um estado interno aos tokens, esse contém a linha e a coluna correspondente ao token
-#[logos(extras = (usize, usize, String))]
+/// atributo para definir um estado interno ao lexer, esse contém a linha e a coluna correspondente ao token
+#[logos(extras = (usize, usize))]
 
 /// enum que define o lexer Logos, em que cada item define um tipo de token reconhecível pelo lexer Logos
 pub enum Token {

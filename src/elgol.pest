@@ -1,0 +1,74 @@
+WHITESPACE = _{ " " | "\t" | "\r" | NEWLINE }
+COMMENT = _{ "#" ~ (!"\n" ~ ANY)* ~ NEWLINE }
+
+identificador = @{ 'A'..'Z' ~ ASCII_ALPHA ~ ASCII_ALPHA+ }
+identificador_funcao = @{ "_" ~ identificador }
+numero = { ('1'..'9') ~ ('0'..'9')* }
+numero_negativo = { comp ~ numero }
+
+fim_bloco = { "." }
+virgula = { "," }
+parenteses_esquerdo = { "(" }
+parenteses_direito = { ")" }
+
+inteiro = @{ "inteiro" }
+zero = @{ "zero" }
+elgio = @{ "elgio" }
+comp = @{ "comp" }
+se = @{ "se" }
+senao = @{ "senao" }
+entao = @{ "entao" }
+enquanto = @{ "enquanto" }
+inicio = { "inicio" ~ fim_bloco }
+fim = { "fim" ~ fim_bloco }
+
+operadores_matematicos = { "+" | "-" | "x" | "/" }
+operador_atribuicao = { "=" }
+operadores_logicos = @{ "maior" | "menor" | "igual" | "diferente" }
+
+variavel = { inteiro ~ identificador ~ fim_bloco }
+
+atribuicao = {
+    inteiro? ~ identificador ~ operador_atribuicao ~ (identificador | numero | zero | chamada_funcao)
+}
+
+argumento = { identificador | numero | numero_negativo | zero }
+chamada_funcao = { identificador_funcao ~ parenteses_esquerdo ~ (argumento ~ virgula*)* ~ parenteses_direito }
+
+// por que fazer operador de multiplicação ser um x? :'(
+operando = { identificador | numero | chamada_funcao | zero }
+expressao = {
+    inteiro? ~ identificador ~ operador_atribuicao ~ operando ~ (operadores_matematicos ~ operando)* ~ fim_bloco
+}
+
+parametro = { inteiro ~ identificador }
+operando_retorno = { identificador | numero | numero_negativo | zero }
+retorno = {
+    elgio ~ operador_atribuicao ~ operando_retorno ~ (operadores_matematicos ~ operando_retorno)* ~ fim_bloco
+}
+
+funcao = {
+    inteiro ~ identificador_funcao ~
+    parenteses_esquerdo ~ (parametro ~ virgula*)* ~ parenteses_direito ~ fim_bloco
+}
+corpo = {
+    inicio ~ (expressao | retorno | variavel | atribuicao | condicional | repeticao)* ~ fim
+}
+
+operando_logico = { identificador | numero | numero_negativo | zero }
+expressao_logica = { operando_logico ~ operadores_logicos ~ operando_logico }
+
+repeticao = {
+    enquanto ~ expressao_logica ~ fim_bloco ~
+    inicio ~ (expressao | condicional | repeticao | chamada_funcao)+ ~ fim
+}
+
+condicional = {
+    se ~ expressao_logica ~ fim_bloco ~
+    entao ~ fim_bloco ~ inicio ~ (expressao | condicional | repeticao | chamada_funcao)+ ~ fim ~
+    senao ~ fim_bloco ~ inicio ~ (expressao | condicional | repeticao | chamada_funcao)* ~ fim
+}
+
+programa = {
+    (funcao ~ corpo)* ~ inicio ~ (condicional | repeticao | expressao | chamada_funcao) ~ fim ~ (funcao ~ corpo)*
+}
