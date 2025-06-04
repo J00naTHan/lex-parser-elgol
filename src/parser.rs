@@ -1,37 +1,30 @@
 use pest::Parser;
-use pest_derive::Parser;
 
-#[derive(Parser)]
-#[grammar = "elgol.pest"]
-pub struct ElgolParser;
+#[derive(pest_derive::Parser)]
+#[grammar = "elgol.pest"] // assumindo que sua gramática está em elgol.pest
+struct ElgolParser;
 
-pub fn parse(input: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let parsed = ElgolParser::parse(Rule::programa, input)?;
-    
-    // Processar a árvore de parsing aqui
-    for pair in parsed {
-        match pair.as_rule() {
-            Rule::funcao => println!("Função: {:?}", pair.as_str()),
-            Rule::expressao => println!("Comando: {:?}", pair.as_str()),
-            _ => {}
-        }
-    }
-    
-    Ok(())
-}
-
-pub fn execute_parser() {
-    let code = r#"
-        inteiro _Soma(inteiro a, inteiro b).
+pub fn main() {
+    let source_code = r#"
+        inteiro _Soma(inteiro Teste, inteiro Teste).
         inicio.
-            elgio = a + b.
+            elgio = Teste + Teste.
         fim.
 
         inicio.
-            inteiro x.
-            x = _Soma(5, 10).
+            inteiro Xis.
+            Xis = 5.
+            _Soma(Xis, 10).
         fim.
     "#;
 
-    parse(code).unwrap();
+    let parsed = ElgolParser::parse(Rule::programa, source_code);
+    match parsed {
+        Ok(pairs) => {
+            println!("Análise sintática bem-sucedida!");
+            // Para ver a estrutura completa:
+            println!("{:#?}", pairs);
+        },
+        Err(e) => println!("Erro de sintaxe: {}", e),
+    }
 }

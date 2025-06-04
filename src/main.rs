@@ -13,6 +13,8 @@ use std::fs::File;
 fn main() {
     println!("Analisador Léxico Sintático\n");
 
+    parser::main();
+
     // lê a entrada do usuário contendo o caminho do código fonte Elgol, associa essa entrada à variável mutável definida abaixo e trata possíveis erros
     println!("Informe o nome do arquivo com código Elgol:");
     let mut file_name = String::new();
@@ -30,8 +32,6 @@ fn main() {
 
     // teste para visualização do arquivo com código-fonte Elgol
     // println!("\n{:?}", haystack);
-
-    parser::execute_parser();
 
     // instancia uma struct de analisador léxico do Logos passando o texto que deve ser analisado
     let mut lexer = lexer::Token::lexer(&haystack);
