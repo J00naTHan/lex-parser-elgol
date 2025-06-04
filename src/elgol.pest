@@ -1,16 +1,28 @@
+// DEFINIÇÕES INICIAIS
+
+// strings não formadoras de token
 WHITESPACE = _{ " " | "\t" | "\r" | NEWLINE }
 COMMENT = _{ "#" ~ (!"\n" ~ ANY)* ~ NEWLINE }
 
+// identificadores da linguagem
 identificador = @{ 'A'..'Z' ~ ASCII_ALPHA ~ ASCII_ALPHA+ }
 identificador_funcao = @{ "_" ~ identificador }
+
+// representação dos números na linguagem + suposição de implementação de números negativos
 numero = { ('1'..'9') ~ ('0'..'9')* }
 numero_negativo = { comp ~ numero }
 
-fim_bloco = { "." }
+// delimitador de comandos
+fim_comando = { "." }
+
+// delimitador de parâmetros e argumentos de uma função
 virgula = { "," }
+
+// delimitador do conjunto de parâmetros e argumentos de uma função
 parenteses_esquerdo = { "(" }
 parenteses_direito = { ")" }
 
+// keywords
 inteiro = @{ "inteiro" }
 zero = @{ "zero" }
 elgio = @{ "elgio" }
@@ -19,56 +31,91 @@ se = @{ "se" }
 senao = @{ "senao" }
 entao = @{ "entao" }
 enquanto = @{ "enquanto" }
-inicio = { "inicio" ~ fim_bloco }
-fim = { "fim" ~ fim_bloco }
 
-operadores_matematicos = { "+" | "-" | "x" | "/" }
+// delimitação dos blocos
+inicio = { "inicio" ~ fim_comando }
+fim = { "fim" ~ fim_comando }
+
+// operadores
+operador_matematico = { "+" | "-" | "x" | "/" }
 operador_atribuicao = { "=" }
-operadores_logicos = @{ "maior" | "menor" | "igual" | "diferente" }
 
-variavel = { inteiro ~ identificador ~ fim_bloco }
+// operadores exclusivos dos laços
+operador_logico = @{ "maior" | "menor" | "igual" | "diferente" }
 
-atribuicao = {
-    inteiro? ~ identificador ~ operador_atribuicao ~ (identificador | numero | zero | chamada_funcao)
-}
 
+
+
+// DECLARAÇÕES
+
+// declaração de variável sem ser iniciada
+variavel = { inteiro ~ identificador ~ fim_comando }
+
+// atribuição de variável
+atribuicao = { inteiro? ~ identificador ~ operador_atribuicao ~ expressao }
+
+// expressão matemática e seus operandos
+operando = { identificador | numero | numero_negativo | zero | chamada_funcao }
+expressao = { operando ~ (operador_matematico ~ operando)* ~ fim_comando }
+
+// argumento a ser passado em uma chamada de função, e chamada de função Elgol
 argumento = { identificador | numero | numero_negativo | zero }
-chamada_funcao = { identificador_funcao ~ parenteses_esquerdo ~ (argumento ~ virgula*)* ~ parenteses_direito }
+chamada_funcao = { identificador_funcao ~ parenteses_esquerdo ~ (argumento ~ (virgula ~ argumento)*)? ~ parenteses_direito }
 
-// por que fazer operador de multiplicação ser um x? :'(
-operando = { identificador | numero | chamada_funcao | zero }
-expressao = {
-    inteiro? ~ identificador ~ operador_atribuicao ~ operando ~ (operadores_matematicos ~ operando)* ~ fim_bloco
-}
+// declaração (átomo de código Elgol que faz sentido por si mesmo e exclusivo de uso no bloco principal)
+declaracao = { variavel | atribuicao | expressao | chamada_funcao }
 
+
+
+
+// BLOCOS
+
+// parametros de funções
 parametro = { inteiro ~ identificador }
+
+// retorno de funções
 operando_retorno = { identificador | numero | numero_negativo | zero }
 retorno = {
-    elgio ~ operador_atribuicao ~ operando_retorno ~ (operadores_matematicos ~ operando_retorno)* ~ fim_bloco
+    elgio ~ operador_atribuicao ~ operando_retorno ~ (operador_matematico ~ operando_retorno)* ~ fim_comando
 }
 
+// declaração de funções
 funcao = {
     inteiro ~ identificador_funcao ~
-    parenteses_esquerdo ~ (parametro ~ virgula*)* ~ parenteses_direito ~ fim_bloco
-}
-corpo = {
-    inicio ~ (expressao | retorno | variavel | atribuicao | condicional | repeticao)* ~ fim
+    parenteses_esquerdo ~ (parametro ~ (virgula ~ parametro)*)? ~ parenteses_direito ~ fim_comando ~ corpo_funcao
 }
 
+// corpo com código de funções
+corpo_funcao = {
+    inicio ~ (declaracao | retorno | condicional | repeticao)* ~ fim
+}
+
+// definição para operandos e expressões lógicas
 operando_logico = { identificador | numero | numero_negativo | zero }
-expressao_logica = { operando_logico ~ operadores_logicos ~ operando_logico }
+expressao_logica = { operando_logico ~ operador_logico ~ operando_logico }
 
+// laço de repetição "while"
 repeticao = {
-    enquanto ~ expressao_logica ~ fim_bloco ~
-    inicio ~ (expressao | condicional | repeticao | chamada_funcao)+ ~ fim
+    enquanto ~ expressao_logica ~ fim_comando ~
+    inicio ~ (declaracao | condicional | repeticao)+ ~ fim
 }
 
+// laço condicional "if-else"
 condicional = {
-    se ~ expressao_logica ~ fim_bloco ~
-    entao ~ fim_bloco ~ inicio ~ (expressao | condicional | repeticao | chamada_funcao)+ ~ fim ~
-    senao ~ fim_bloco ~ inicio ~ (expressao | condicional | repeticao | chamada_funcao)* ~ fim
+    se ~ expressao_logica ~ fim_comando ~
+    entao ~ fim_comando ~ inicio ~ (declaracao | condicional | repeticao)+ ~ fim ~
+    senao ~ fim_comando ~ inicio ~ (declaracao | condicional | repeticao)* ~ fim
 }
 
+
+
+
+// PROGRAMA COMPLETO
+
+// estrutura extra para facilitar leitura e entendimento da gramática
+bloco_principal = { inicio ~ (declaracao | condicional | repeticao)* ~ fim }
+
+// gramática para o programa propriamente dito
 programa = {
-    (funcao ~ corpo)* ~ inicio ~ (condicional | repeticao | expressao | chamada_funcao) ~ fim ~ (funcao ~ corpo)*
+    SOI ~ (funcao)* ~ bloco_principal? ~ (funcao)* ~ EOI
 }
