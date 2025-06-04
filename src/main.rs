@@ -13,7 +13,9 @@ use std::fs::File;
 fn main() {
     println!("Analisador Léxico Sintático\n");
 
-    parser::main();
+    parser::parse(2);
+
+    parser::parse(3);
 
     // lê a entrada do usuário contendo o caminho do código fonte Elgol, associa essa entrada à variável mutável definida abaixo e trata possíveis erros
     println!("Informe o nome do arquivo com código Elgol:");
